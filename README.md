@@ -5,7 +5,7 @@ q language bindings for Apache Kafka based on librdkafka
 ## Installation
 
 - Install [librdkafka](https://github.com/edenhill/librdkafka)
-- Download/close this repo and navigate to the kafkaq directory
+- Download/clone this repo and navigate to the kafkaq directory
 - On Linux, compile with the following:
 ```
 gcc -O2 -fPIC -shared -Wall kafkaq.c -o kafkaq.so -lrdkafka -lpthread
