@@ -8,12 +8,12 @@ q language bindings for Apache Kafka based on librdkafka
 - Download/clone this repo and navigate to the kafkaq directory
 - On Linux, compile with the following:
 ```
-gcc -O2 -fPIC -shared -Wall kafkaq.c -o kafkaq.so -lrdkafka -lpthread
+gcc -O2 -fPIC -shared kafkaq.c -o kafkaq.so -lrdkafka -lpthread
 ```
 
 ### Kakfa Installation
 
-To test with a local instance of kafka (more details [here](https://kafka.apache.org/quickstart)):
+To test with a local instance of kafka (more details [here](https://kafka.apache.org/quickstart) - the box should have an up to date version of java installed)
 
 ```
 > # Download kafka package
@@ -50,4 +50,6 @@ q)
 
 ### Notes
 
-### Performance
+- Currently the library supports a single consumer thread subscribed to one topic at a time
+ 
+

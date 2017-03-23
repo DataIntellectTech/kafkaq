@@ -25,12 +25,27 @@ typedef struct subscription
 K initconsumer(K brokers, K options) {
   rd_kafka_conf_t *conf;
   char errstr[512];
+  int i;
+  K optkeys,optvals;
   if(consumerinit) {
     krr("Already initialised - cleanup first");
     return (K)0;
   }
   if(brokers->t != -11) { krr("type"); return (K)0;}
   conf = rd_kafka_conf_new();
+  if((options->n != 0) && (options->t != 99)) { krr("type"); return (K)0;}
+  if(options->n !=0) {
+    optkeys = kK(options)[0];
+    optvals = kK(options)[1];
+    if((optkeys->t != 11) || (optvals->t != 11)) { krr("type"); return (K)0;}
+    for(i=0;i<optkeys->n;i++){
+      if(rd_kafka_conf_set(conf, kS(optkeys)[i], kS(optvals)[i], errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK) {
+        krr(errstr);
+        return (K)0;
+      }
+    }
+  }
+
   if (!(rkconsumer = rd_kafka_new(RD_KAFKA_CONSUMER, conf, errstr, sizeof(errstr)))) {
    krr(errstr);
    return (K)0; 
@@ -46,12 +61,26 @@ K initconsumer(K brokers, K options) {
 K initproducer(K brokers, K options) {
   rd_kafka_conf_t *conf;
   char errstr[512];
+  int i;
+  K optkeys,optvals;
   if(producerinit) {
     krr("Already initialised - cleanup first");
     return (K)0;
   }
   if(brokers->t != -11) { krr("type"); return (K)0;}
   conf = rd_kafka_conf_new();
+  if((options->n != 0) && (options->t != 99)) { krr("type"); return (K)0;}
+  if(options->n !=0) {
+    optkeys = kK(options)[0];
+    optvals = kK(options)[1];
+    if((optkeys->t != 11) || (optvals->t != 11)) { krr("type"); return (K)0;}
+    for(i=0;i<optkeys->n;i++){
+      if(rd_kafka_conf_set(conf, kS(optkeys)[i], kS(optvals)[i], errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK) {
+        krr(errstr);
+        return (K)0;
+      }
+    }
+  }
   if (!(rkproducer = rd_kafka_new(RD_KAFKA_PRODUCER, conf, errstr, sizeof(errstr)))) {
    krr(errstr);
    return (K)0; 
@@ -122,7 +151,7 @@ void* subscribe_thread (void *sub) {
 	int64_t start_offset = 0;
   Subscription *subinfo = (Subscription *)sub;
   int partition = subinfo->partition;
-
+  
 	topic_conf = rd_kafka_topic_conf_new();
 
   rkt = rd_kafka_topic_new(rkconsumer, subinfo->topic, topic_conf);
@@ -176,6 +205,7 @@ K callback(I d) {
 K subscribe(K topic, K partition) {
   pthread_t tid;
   if((topic->t != -11) || (partition->t != -7)) {krr("type"); return (K)0;};
+  if(!consumerinit) {krr("init"); return (K)0;};
   Subscription *sub = malloc(sizeof(Subscription));
   strcpy(sub->topic, topic->s);
   sub->partition = partition->j;
@@ -198,6 +228,7 @@ K publish(K topic, K partition, K key, K msg) {
     krr("type");
     return (K)0;
   }
+  if(!producerinit) {krr("init"); return (K)0;};
 	topic_conf = rd_kafka_topic_conf_new();
   rkt = rd_kafka_topic_new(rkproducer, topic->s, topic_conf);
   rd_kafka_produce(rkt, 0, RD_KAFKA_MSG_F_COPY, kG(msg), msg->n, NULL, 0, NULL);
